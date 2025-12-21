@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detail Member - JKT48 Show Theater</title>
+
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#0f1220,#1a1f3c);color:#fff;min-height:100vh;padding:20px}
+
+.back-btn{
+  position:fixed;
+  top:20px;
+  left:20px;
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(10px);
+  border:2px solid rgba(255,255,255,0.2);
+  color:#fff;
+  padding:12px 24px;
+  border-radius:50px;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:14px;
+  transition:all 0.3s;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  z-index:100;
+  border:none;
+}
+.back-btn:hover{background:rgba(255,255,255,0.2);transform:translateX(-5px)}
+
+.container{
+  max-width:500px;
+  width:100%;
+  margin:80px auto 40px;
+  background:linear-gradient(135deg,#1f2937,#111827);
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+
+.header{
+  background:linear-gradient(135deg,var(--gen-color),var(--gen-color-dark));
+  padding:20px;
+  text-align:center;
+  position:relative;
+}
+.header h1{
+  font-size:20px;
+  margin:0;
+  color:#fff;
+  text-shadow:2px 2px 8px rgba(0,0,0,0.3);
+}
+
+.photo-container{text-align:center;margin:10px 0 0}
+.photo{
+  width:140px;
+  height:140px;
+  border-radius:50%;
+  border:5px solid #fff;
+  object-fit:cover;
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+  background:#1f2937;
+}
+
+.content{padding:30px}
+.info-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:16px 0;
+  border-bottom:1px solid #374151;
+}
+.info-row:last-child{border-bottom:none}
+.info-label{
+  color:#9ca3af;
+  font-size:15px;
+  font-weight:600;
+}
+.info-value{
+  color:#fff;
+  font-size:15px;
+  font-weight:bold;
+  text-align:right;
+  max-width:60%;
+  word-wrap:break-word;
+}
+
+/* Show Count Card */
+.show-count{
+  background:linear-gradient(135deg,var(--gen-color),var(--gen-color-dark));
+  padding:20px;
+  margin:20px 0 0;
+  border-radius:16px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.show-count::before{
+  content:'';
+  position:absolute;
+  top:-50%;
+  right:-50%;
+  width:200%;
+  height:200%;
+  background:radial-gradient(circle,rgba(255,255,255,0.1),transparent);
+  animation:pulse-glow 3s infinite;
+}
+@keyframes pulse-glow{0%,100%{transform:scale(1);opacity:0.5}50%{transform:scale(1.1);opacity:0.8}}
+.show-count .number{
+  font-size:36px;
+  font-weight:bold;
+  color:#fff;
+  margin-bottom:5px;
+  position:relative;
+  z-index:1;
+}
+.show-count .label{
+  font-size:14px;
+  color:rgba(255,255,255,0.8);
+  position:relative;
+  z-index:1;
+}
+
+/* Progress to Milestone */
+.milestone{
+  background:#1f2937;
+  padding:20px;
+  margin:20px 0 0;
+  border-radius:16px;
+  border:2px solid #374151;
+}
+.milestone-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+}
+.milestone-title{
+  font-size:14px;
+  font-weight:bold;
+  color:#9ca3af;
+}
+.milestone-target{
+  font-size:13px;
+  color:#6366f1;
+  font-weight:bold;
+}
+.milestone-bar{
+  height:12px;
+  background:#374151;
+  border-radius:12px;
+  overflow:hidden;
+  position:relative;
+}
+.milestone-bar span{
+  display:block;
+  height:100%;
+  background:linear-gradient(90deg,var(--gen-color),var(--gen-color-dark));
+  border-radius:12px;
+  transition:width 1s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 0 15px var(--gen-color);
+}
+.milestone-remaining{
+  margin-top:8px;
+  font-size:12px;
+  color:#9ca3af;
+  text-align:right;
+}
+
+.loading{text-align:center;padding:100px 20px;color:#9ca3af}
+
+/* Responsive */
+@media (max-width: 767px) and (min-width: 481px) {
+  body{padding:15px}
+  .back-btn{top:15px;left:15px;padding:10px 20px;font-size:13px}
+  .container{max-width:450px;margin:70px auto 30px;border-radius:20px}
+  .header{padding:18px}
+  .header h1{font-size:18px}
+  .photo{width:130px;height:130px;border-width:4px}
+  .content{padding:25px}
+}
+
+@media (max-width: 480px) {
+  body{padding:10px}
+  .back-btn{top:10px;left:10px;padding:8px 16px;font-size:12px;gap:6px}
+  .container{max-width:100%;margin:60px auto 20px;border-radius:16px}
+  .header{padding:15px}
+  .header h1{font-size:16px}
+  .photo{width:110px;height:110px;border-width:3px}
+  .content{padding:20px}
+  .info-row{padding:12px 0}
+  .info-label{font-size:13px}
+  .info-value{font-size:13px;max-width:55%}
+  .show-count{padding:16px;margin:16px 0 0;border-radius:12px}
+  .show-count .number{font-size:28px}
+  .show-count .label{font-size:12px}
+  .milestone{padding:15px;margin:15px 0 0}
+  .milestone-title{font-size:13px}
+  .milestone-target{font-size:12px}
+  .milestone-remaining{font-size:11px}
+}
+
+@media (max-width: 359px) {
+  body{padding:8px}
+  .back-btn{padding:6px 12px;font-size:11px}
+  .container{margin:55px auto 15px}
+  .header{padding:12px}
+  .header h1{font-size:14px}
+  .photo{width:90px;height:90px}
+  .content{padding:15px}
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .container{margin:20px auto}
+  .photo{width:80px;height:80px}
+  .content{padding:15px}
+}
+
+@media (min-width: 1025px) {
+  .container{max-width:550px;margin:100px auto 50px}
+  .photo{width:160px;height:160px}
+  .content{padding:35px}
+}
+</style>
+</head>
+<body>
+
+<button onclick="goBack()" class="back-btn">← Kembali</button>
+
+<div class="container" id="container">
+  <div class="loading">⏳ Loading...</div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://pprxfopqkvpeajeoxzig.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwcnhmb3Bxa3ZwZWFqZW94emlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNTI4MTIsImV4cCI6MjA4MTgyODgxMn0.iXRO_dAHhtVHRLqGTresG_63RD2zIaopNXtXYNfthdg";
+
+const urlParams = new URLSearchParams(window.location.search);
+const MEMBER_NAME = urlParams.get('member');
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const GEN_COLORS = {
+  3: '#ec4899', 6: '#22c55e', 7: '#15803d', 8: '#1e40af',
+  9: '#06b6d4', 10: '#38bdf8', 11: '#f97316', 12: '#fde68a',
+  13: '#facc15', 14: '#f3c6ff'
+};
+
+async function loadMember() {
+  if (!MEMBER_NAME) {
+    document.getElementById('container').innerHTML = '<div class="loading">Member tidak ditemukan</div>';
+    return;
+  }
+
+  try {
+    const { data, error } = await db
+      .from('members')
+      .select('*')
+      .eq('name', MEMBER_NAME)
+      .single();
+
+    if (error) throw error;
+    
+    if (!data) {
+      document.getElementById('container').innerHTML = '<div class="loading">Member tidak ditemukan</div>';
+      return;
+    }
+
+    renderMember(data);
+    
+  } catch (err) {
+    console.error('Error:', err);
+    document.getElementById('container').innerHTML = '<div class="loading">Error loading data</div>';
+  }
+}
+
+function renderMember(member) {
+  const color = GEN_COLORS[member.gen] || '#ec4899';
+  const colorDark = adjustColor(color, -20);
+  
+  // Set CSS variables
+  document.documentElement.style.setProperty('--gen-color', color);
+  document.documentElement.style.setProperty('--gen-color-dark', colorDark);
+  
+  // Calculate milestone
+  const milestones = [100, 300, 500, 700, 900, 1000, 1200, 1500];
+  const nextMilestone = milestones.find(m => m > member.show) || (Math.ceil(member.show / 500) * 500);
+  const milestonePercent = Math.min(100, (member.show / nextMilestone) * 100);
+  const remaining = nextMilestone - member.show;
+  
+  document.getElementById('container').innerHTML = `
+    <div class="header">
+      <h1>Anggota JKT48 • Gen ${member.gen}</h1>
+    </div>
+    <div class="photo-container">
+      <img class="photo" src="img/${member.name.toLowerCase()}.jpg" onerror="this.src='img/default.jpg'" alt="${member.name}">
+    </div>
+    <div class="content">
+      <div class="info-row">
+        <div class="info-label">Nama</div>
+        <div class="info-value">${member.full_name || member.name}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Nama Panggilan</div>
+        <div class="info-value">${member.nickname || member.name}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Tanggal Lahir</div>
+        <div class="info-value">${member.birth_date || '-'}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Golongan Darah</div>
+        <div class="info-value">${member.blood_type || '-'}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Horoskop</div>
+        <div class="info-value">${member.zodiac || '-'}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Tinggi Badan</div>
+        <div class="info-value">${member.height || '-'}</div>
+      </div>
+      
+      <div class="show-count">
+        <div class="number">${member.show}</div>
+        <div class="label">Total Show Theater</div>
+      </div>
+      
+      <div class="milestone">
+        <div class="milestone-header">
+          <div class="milestone-title"> Progress  Milestone</div>
+          <div class="milestone-target">${nextMilestone} show</div>
+        </div>
+        <div class="milestone-bar">
+          <span style="width:${milestonePercent}%"></span>
+        </div>
+        <div class="milestone-remaining">${remaining} show lagi untuk mencapai target</div>
+      </div>
+    </div>
+  `;
+}
+
+function adjustColor(color, amount) {
+  const num = parseInt(color.replace('#', ''), 16);
+  const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+  const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+  const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+  return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+}
+
+function goBack() {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = 'index.html';
+  }
+}
+
+loadMember();
+console.log('🚀 JKT48 Show Theater - Detail View');
+</script>
+</body>
+</html>
