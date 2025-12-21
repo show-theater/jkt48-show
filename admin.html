@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - JKT48 Show Theater</title>
+
+<!-- ✅ Meta tag untuk mencegah browser caching -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#0f1220,#1a1f3c);color:#fff;min-height:100vh;padding-bottom:120px;overflow-x:hidden}
+header{text-align:center;padding:20px;font-size:28px;font-weight:bold;text-shadow:2px 2px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;gap:10px}
+.admin-badge{background:#ef4444;color:#fff;padding:5px 12px;border-radius:20px;font-size:14px;font-weight:bold;box-shadow:0 2px 8px rgba(239,68,68,0.4)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:0 20px 10px;gap:10px;flex-wrap:wrap}
+.search-box{flex:1;max-width:300px;position:relative}
+.search-box input{width:100%;padding:10px 35px 10px 12px;border-radius:20px;border:2px solid #374151;background:#1f2937;color:#fff;font-size:14px;outline:none;transition:all 0.2s}
+.search-box input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
+.search-box::after{content:'🔍';position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;opacity:0.6}
+button{border:none;border-radius:20px;padding:10px 20px;font-weight:bold;cursor:pointer;font-size:14px;transition:all 0.2s;white-space:nowrap}
+button:hover{opacity:0.9;transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+.logout-btn{background:#22c55e;color:#fff;box-shadow:0 4px 6px rgba(34,197,94,0.3)}
+.back-btn{background:#6366f1;color:#fff;box-shadow:0 4px 6px rgba(99,102,241,0.3)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:0 20px 20px}
+.filter{padding:10px 18px;font-size:13px;border-radius:20px;transition:all 0.2s}
+.filter:hover{transform:scale(1.05)}
+.filter.active{box-shadow:0 4px 12px rgba(0,0,0,0.4);transform:scale(1.1)}
+.filter.all{background:#6366f1;color:#fff}
+.filter.all.active{background:#4f46e5}
+.container{padding:20px;display:grid;grid-template-columns:repeat(10,1fr);gap:12px;max-width:1400px;margin:0 auto;padding-bottom:100px;overflow-x:hidden}
+@media (max-width:1200px){.container{grid-template-columns:repeat(8,1fr)}}
+@media (max-width:900px){.container{grid-template-columns:repeat(6,1fr)}}
+@media (max-width:600px){.container{grid-template-columns:repeat(5,1fr)}}
+@media (max-width:480px){.container{grid-template-columns:repeat(4,1fr)}}
+.card{background:#1b1f3a;border-radius:12px;padding:12px 8px 8px 8px;text-align:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--color)}
+.card:hover{transform:translateY(-4px);box-shadow:0 6px 16px rgba(0,0,0,0.3)}
+.avatar{width:100%;aspect-ratio:1;border-radius:50%;border:2px solid var(--color);object-fit:cover;background:linear-gradient(135deg,#374151,#1f2937);box-shadow:0 4px 8px rgba(0,0,0,0.2)}
+.gen-badge{position:absolute;top:6px;right:6px;background:var(--color);color:#fff;font-size:10px;font-weight:bold;padding:3px 8px;border-radius:12px;box-shadow:0 2px 4px rgba(0,0,0,0.3);z-index:10}
+.name{margin-top:10px;font-weight:bold;font-size:13px;color:#fff}
+.show{font-size:12px;color:#9ca3af;margin-top:4px;font-weight:600}
+.bar{margin-top:10px;height:8px;background:#374151;border-radius:8px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--color);transition:width 0.3s;box-shadow:0 0 8px var(--color)}
+.admin-controls{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.admin-controls button{min-width:32px;min-height:32px;width:32px;height:32px;border-radius:50%;background:var(--color);color:#fff;padding:0;font-size:20px;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.admin-controls button:hover{opacity:0.8;transform:scale(1.15)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px);padding:20px}
+.modal-box{background:#1f2937;padding:28px;border-radius:20px;width:90%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.modal-box h3{margin:0 0 20px;font-size:20px}
+.modal-box input{width:100%;padding:14px;border-radius:12px;border:2px solid #374151;background:#111827;color:#fff;font-size:15px;outline:none;transition:border-color 0.2s}
+.modal-box input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
+.error{color:#ef4444;font-size:13px;display:none;margin:12px 0;font-weight:600}
+.msg{grid-column:1/-1;text-align:center;padding:60px 20px;font-size:16px;color:#9ca3af}
+.stats{text-align:center;padding:10px 20px;font-size:13px;color:#9ca3af;font-weight:600}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile (< 480px) */
+@media (max-width: 480px) {
+  header{font-size:20px;padding:15px;flex-direction:column;gap:8px}
+  .admin-badge{font-size:12px;padding:4px 10px}
+  .top{flex-direction:column;padding:0 15px 10px}
+  .search-box{max-width:100%}
+  .top > div{width:100%;justify-content:center}
+  button{padding:8px 16px;font-size:13px}
+  .filters{padding:0 15px 15px;gap:6px}
+  .filter{padding:8px 14px;font-size:12px}
+  .container{padding:15px;gap:10px}
+  .card{padding:10px 6px 6px 6px}
+  .gen-badge{font-size:9px;padding:2px 6px;top:4px;right:4px}
+  .name{font-size:11px;margin-top:8px}
+  .show{font-size:10px}
+  .bar{height:6px;margin-top:8px}
+  .admin-controls{gap:4px;margin-top:8px}
+  .admin-controls button{width:28px;height:28px;min-width:28px;min-height:28px;font-size:18px}
+  .modal-box{padding:20px;max-width:300px}
+  .modal-box h3{font-size:18px;margin-bottom:16px}
+  .modal-box input{padding:12px;font-size:14px}
+  .stats{font-size:12px;padding:8px 15px}
+}
+
+/* Tablet (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  header{font-size:24px}
+  .top{padding:0 18px 10px}
+  .search-box{max-width:350px}
+  .filters{padding:0 18px 18px}
+  .container{padding:18px;gap:11px}
+}
+
+/* Landscape Mode */
+@media (max-height: 500px) and (orientation: landscape) {
+  header{padding:10px;font-size:18px}
+  .top{padding:0 15px 8px}
+  .filters{padding:0 15px 10px}
+  .container{padding:15px;gap:10px}
+  .card{padding:8px 6px 6px 6px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  🔥 JKT48 SHOW THEATER
+  <span class="admin-badge">👑 ADMIN</span>
+</header>
+
+<div class="top">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Cari member..." oninput="searchMember()">
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="back-btn" onclick="goToUserView()">← User View</button>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="filters">
+  <button class="filter all active" onclick="filterGen('all')">ALL</button>
+  <button class="filter" onclick="filterGen(3)" style="background:#ec4899">Gen 3</button>
+  <button class="filter" onclick="filterGen(6)" style="background:#22c55e">Gen 6</button>
+  <button class="filter" onclick="filterGen(7)" style="background:#15803d">Gen 7</button>
+  <button class="filter" onclick="filterGen(8)" style="background:#1e40af">Gen 8</button>
+  <button class="filter" onclick="filterGen(9)" style="background:#06b6d4">Gen 9</button>
+  <button class="filter" onclick="filterGen(10)" style="background:#38bdf8">Gen 10</button>
+  <button class="filter" onclick="filterGen(11)" style="background:#f97316">Gen 11</button>
+  <button class="filter" onclick="filterGen(12)" style="background:#fde68a;color:#000">Gen 12</button>
+  <button class="filter" onclick="filterGen(13)" style="background:#facc15;color:#000">Gen 13</button>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="container" id="list">
+  <div class="msg">⏳ Loading data...</div>
+</div>
+
+<div class="modal" id="loginModal">
+  <div class="modal-box">
+    <h3>🔐 Admin Login</h3>
+    <input id="password" type="password" placeholder="Password" onkeypress="if(event.key==='Enter')login()">
+    <div class="error" id="errorMsg"></div>
+    <button onclick="login()" style="background:#22c55e;width:100%;margin-top:12px;color:#fff;padding:14px;border-radius:12px">Login</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://pprxfopqkvpeajeoxzig.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwcnhmb3Bxa3ZwZWFqZW94emlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNTI4MTIsImV4cCI6MjA4MTgyODgxMn0.iXRO_dAHhtVHRLqGTresG_63RD2zIaopNXtXYNfthdg";
+const ADMIN_PASSWORD = "jkt48admin";
+
+const GEN_COLORS = {
+  3: '#ec4899', 6: '#22c55e', 7: '#15803d', 8: '#1e40af',
+  9: '#06b6d4', 10: '#38bdf8', 11: '#f97316', 12: '#fde68a', 13: '#facc15'
+};
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let members = [];
+let currentGen = 'all';
+let searchQuery = '';
+
+// Check auth on load
+if (localStorage.getItem('jkt48_admin') !== 'true') {
+  document.getElementById('loginModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('password').focus(), 100);
+}
+
+async function loadData() {
+  try {
+    const { data, error } = await db
+      .from('members')
+      .select('*')
+      .order('show', { ascending: false });
+
+    if (error) throw error;
+
+    members = data || [];
+    renderMembers();
+    updateStats();
+    
+  } catch (err) {
+    console.error('Error:', err);
+    document.getElementById('list').innerHTML = `<div class="msg" style="color:#ef4444">❌ ${err.message}</div>`;
+  }
+}
+
+function renderMembers() {
+  const list = document.getElementById('list');
+  let filtered = members.filter(m => {
+    const matchGen = currentGen === 'all' || m.gen === currentGen;
+    const matchSearch = !searchQuery || m.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchGen && matchSearch;
+  });
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="msg">Tidak ada member yang cocok</div>';
+    return;
+  }
+  
+  list.innerHTML = '';
+  
+  filtered.sort((a, b) => b.show - a.show).forEach(m => {
+    const percent = Math.min(100, (m.show / 1000) * 100);
+    const color = GEN_COLORS[m.gen] || '#6366f1';
+    
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.setProperty('--color', color);
+    
+    card.innerHTML = `
+      <div class="gen-badge">G${m.gen}</div>
+      <img class="avatar" src="img/${m.name.toLowerCase()}.jpg" onerror="this.style.display='none'" alt="${m.name}">
+      <div class="name">${m.name}</div>
+      <div class="show">${m.show} show</div>
+      <div class="bar"><span style="width:${percent}%"></span></div>
+      <div class="admin-controls">
+        <button onclick="updateShow(${m.id}, -1)" title="Kurangi">−</button>
+        <button onclick="updateShow(${m.id}, 1)" title="Tambah">+</button>
+      </div>
+    `;
+    
+    list.appendChild(card);
+  });
+}
+
+async function updateShow(id, change) {
+  const member = members.find(m => m.id === id);
+  if (!member) return;
+  
+  const newShow = Math.max(0, member.show + change);
+  
+  try {
+    const { data, error } = await db
+      .from('members')
+      .update({ show: newShow })
+      .eq('id', id)
+      .select();
+    
+    if (error) {
+      console.error('Update error:', error);
+      alert(`❌ Gagal update!\n\n${error.message}`);
+      return;
+    }
+    
+    if (!data || data.length === 0) {
+      alert('❌ Update gagal - cek RLS policy di Supabase');
+      return;
+    }
+    
+    member.show = newShow;
+    renderMembers();
+    updateStats();
+    
+    // Notification
+    const notification = document.createElement('div');
+    const isIncrease = change > 0;
+    const bgColor = isIncrease ? '#22c55e' : '#ef4444';
+    const icon = isIncrease ? '✅' : '➖';
+    
+    notification.style.cssText = `position:fixed;top:20px;right:20px;background:${bgColor};color:#fff;padding:15px 25px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:9999;font-weight:bold;animation:slideIn 0.3s`;
+    notification.textContent = `${icon} ${member.name}: ${member.show} show`;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 2000);
+    
+  } catch (err) {
+    console.error('Exception:', err);
+    alert(`❌ Error: ${err.message}`);
+  }
+}
+
+function updateStats() {
+  const stats = document.getElementById('stats');
+  let filtered = members.filter(m => {
+    const matchGen = currentGen === 'all' || m.gen === currentGen;
+    const matchSearch = !searchQuery || m.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchGen && matchSearch;
+  });
+  
+  const total = filtered.reduce((sum, m) => sum + m.show, 0);
+  stats.innerHTML = `📊 ${filtered.length} members • ${total.toLocaleString()} total shows`;
+}
+
+function searchMember() {
+  searchQuery = document.getElementById('searchInput').value;
+  renderMembers();
+  updateStats();
+}
+
+function filterGen(gen) {
+  currentGen = gen;
+  document.querySelectorAll('.filter').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  renderMembers();
+  updateStats();
+}
+
+function login() {
+  const pw = document.getElementById('password').value;
+  const errMsg = document.getElementById('errorMsg');
+  
+  if (!pw) {
+    errMsg.style.display = 'block';
+    errMsg.innerText = '⚠️ Masukkan password!';
+    return;
+  }
+  
+  if (pw === ADMIN_PASSWORD) {
+    localStorage.setItem('jkt48_admin', 'true');
+    document.getElementById('password').value = '';
+    document.getElementById('loginModal').style.display = 'none';
+    errMsg.style.display = 'none';
+    loadData();
+  } else {
+    errMsg.style.display = 'block';
+    errMsg.innerText = '❌ Password salah!';
+  }
+}
+
+function logout() {
+  if (confirm('Yakin mau logout?')) {
+    localStorage.removeItem('jkt48_admin');
+    window.location.href = 'index.html';
+  }
+}
+
+function goToUserView() {
+  window.location.href = 'index.html';
+}
+
+// Close modal
+document.getElementById('loginModal').onclick = (e) => {
+  if (e.target.id === 'loginModal') {
+    window.location.href = 'index.html';
+  }
+};
+
+// Realtime updates
+db.channel('members-changes')
+  .on('postgres_changes', 
+    { event: 'UPDATE', schema: 'public', table: 'members' },
+    (payload) => {
+      const idx = members.findIndex(m => m.id === payload.new.id);
+      if (idx !== -1) {
+        members[idx] = payload.new;
+        renderMembers();
+        updateStats();
+      }
+    }
+  )
+  .subscribe();
+
+console.log('🚀 JKT48 Show Theater - Admin Panel');
+loadData();
+</script>
+</body>
+</html>
