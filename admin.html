@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - JKT48 Show Theater</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#f5f5f5;color:#333;min-height:100vh;padding-bottom:60px;transition:background 0.3s,color 0.3s}
+body.dark{background:#0a0e1a;color:#e5e7eb}
+header{background:#e60012;text-align:center;padding:20px 70px 20px 20px;font-size:20px;font-weight:bold;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;white-space:nowrap}
+@media (max-width:480px){header{font-size:18px;padding:15px 60px 15px 15px}}
+.admin-badge{background:#fff;color:#e60012;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:bold}
+.header-theme-toggle{position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.2);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:8px;transition:all 0.3s}
+.header-theme-toggle:hover{background:rgba(255,255,255,0.3);transform:translateY(-50%) scale(1.1)}
+.header-theme-toggle svg{width:100%;height:100%;transition:transform 0.3s}
+.top{padding:15px 20px;background:#fff;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;gap:10px;transition:background 0.3s,border-color 0.3s}
+body.dark .top{background:#111827;border-bottom:1px solid #1f2937}
+.search-box{flex:1;max-width:400px;position:relative;display:inline-block}
+.search-box input{width:100%;padding:12px 20px;border-radius:25px;border:2px solid #f59e0b;background:#fff;font-size:14px;outline:none;color:#333;transition:all 0.3s}
+.search-box input:focus{border-color:#f97316}
+body.dark .search-box input{background:#0a0e1a;color:#e5e7eb;border-color:#f59e0b}
+button{border:none;border-radius:20px;padding:10px 20px;font-weight:bold;cursor:pointer;font-size:14px}
+.logout-btn{background:#22c55e;color:#fff}
+.activity-section{padding:15px 20px;background:#fff;border-bottom:1px solid #ddd;transition:background 0.3s,border-color 0.3s}
+body.dark .activity-section{background:#111827;border-bottom:1px solid #1f2937}
+.activity-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.activity-title{font-size:16px;font-weight:bold;color:#333;transition:color 0.3s}
+body.dark .activity-title{color:#e5e7eb}
+.clear-log-btn{background:#ef4444;color:#fff;padding:8px 16px;font-size:12px;border-radius:12px}
+.activity-log{background:#f9fafb;border-radius:12px;padding:15px;border:1px solid #e5e7eb;max-height:250px;overflow-y:auto;transition:background 0.3s,border-color 0.3s}
+body.dark .activity-log{background:#1f2937;border-color:#374151}
+.activity-item{display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:6px;background:#fff;border-radius:8px;border-left:3px solid var(--color);transition:background 0.3s}
+.activity-item:last-child{margin-bottom:0}
+body.dark .activity-item{background:#111827}
+.activity-icon{font-size:18px;flex-shrink:0}
+.activity-content{flex:1}
+.activity-text{font-size:12px;color:#333;font-weight:600;transition:color 0.3s}
+body.dark .activity-text{color:#e5e7eb}
+.activity-time{font-size:10px;color:#666;margin-top:2px;transition:color 0.3s}
+body.dark .activity-time{color:#9ca3af}
+.activity-empty{text-align:center;padding:30px;color:#999;font-size:13px;transition:color 0.3s}
+body.dark .activity-empty{color:#6b7280}
+.filters{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:15px 20px;background:#fff;border-bottom:1px solid #ddd;transition:background 0.3s,border-color 0.3s}
+body.dark .filters{background:#111827;border-bottom:1px solid #1f2937}
+.filter{padding:8px 16px;font-size:13px;border-radius:20px;border:2px solid transparent;cursor:pointer;font-weight:bold;background:#f0f0f0;color:#333;transition:all 0.3s}
+.filter.active{border-color:#e60012}
+.filter.all{background:#e60012;color:#fff}
+.filter.all.active{border-color:#c00010}
+body.dark .filter{background:#1f2937;color:#e5e7eb}
+body.dark .filter.all{background:#c00010;color:#fff}
+.stats{text-align:center;padding:10px;font-size:12px;color:#666;background:#fff;border-bottom:1px solid #ddd;transition:background 0.3s,border-color 0.3s}
+body.dark .stats{background:#0a0e1a;border-bottom:1px solid #1f2937;color:#9ca3af}
+.container{padding:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:15px;max-width:900px;margin:0 auto}
+@media (max-width:600px){.container{grid-template-columns:repeat(4,1fr);gap:10px;padding:15px}}
+.card{background:#fff;border-radius:12px;padding:0;text-align:center;cursor:pointer;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);transition:all 0.3s}
+.card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+body.dark .card{background:#111827;box-shadow:0 2px 8px rgba(0,0,0,0.5)}
+body.dark .card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.7)}
+.avatar{width:100%;aspect-ratio:3/4;object-fit:cover;background:#f0f0f0;display:block;transition:all 0.3s}
+body.dark .avatar{background:#0a0e1a}
+.card-footer{padding:8px 6px;background:var(--gen-color)}
+.gen-badge{display:inline-block;background:rgba(0,0,0,0.2);color:#fff;font-size:8px;font-weight:bold;padding:2px 6px;border-radius:8px;margin-bottom:4px}
+.name{font-weight:bold;font-size:12px;color:#fff;margin-bottom:3px}
+.show{font-size:10px;color:rgba(255,255,255,0.9);margin-bottom:4px}
+.bar{height:4px;background:rgba(0,0,0,0.2);border-radius:2px;overflow:hidden;margin-bottom:6px}
+.bar span{display:block;height:100%;background:#fff}
+.admin-controls{display:flex;gap:4px;justify-content:center}
+.admin-controls button{min-width:28px;min-height:28px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.3);color:#fff;padding:0;font-size:18px;font-weight:bold;display:inline-flex;align-items:center;justify-content:center}
+.admin-controls button:hover{background:rgba(0,0,0,0.5)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:999;padding:20px;backdrop-filter:blur(8px)}
+.modal-box{background:#fff;padding:28px;border-radius:20px;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.5);transition:background 0.3s,box-shadow 0.3s;position:relative}
+body.dark .modal-box{background:#111827;box-shadow:0 20px 60px rgba(0,0,0,0.8)}
+.modal-theme-toggle{position:absolute;top:20px;right:20px;background:#e60012;border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:7px;transition:all 0.3s;z-index:10}
+.modal-theme-toggle:hover{transform:scale(1.1)}
+.modal-theme-toggle svg{width:100%;height:100%;transition:transform 0.3s}
+.modal-box h3{margin:0 0 8px;font-size:20px;color:#333;transition:color 0.3s}
+body.dark .modal-box h3{color:#e5e7eb}
+.modal-box p{margin:0 0 20px;font-size:14px;color:#666;transition:color 0.3s}
+body.dark .modal-box p{color:#9ca3af}
+.modal-box input{width:100%;padding:12px;border-radius:12px;border:2px solid #ddd;background:#fff;color:#333;font-size:14px;outline:none;margin-bottom:10px;transition:all 0.3s}
+.modal-box input:focus{border-color:#f59e0b}
+body.dark .modal-box input{background:#0a0e1a;color:#e5e7eb;border-color:#374151}
+body.dark .modal-box input:focus{border-color:#f59e0b}
+.input-label{display:block;font-size:12px;font-weight:600;color:#666;margin-bottom:6px;transition:color 0.3s}
+body.dark .input-label{color:#9ca3af}
+.modal-buttons{display:flex;gap:10px;margin-top:20px}
+.modal-buttons button{flex:1;padding:12px;border-radius:12px;font-weight:bold;font-size:14px;transition:all 0.3s}
+.btn-cancel{background:#e5e7eb;color:#333}
+.btn-cancel:hover{background:#d1d5db}
+body.dark .btn-cancel{background:#374151;color:#e5e7eb}
+body.dark .btn-cancel:hover{background:#4b5563}
+.btn-confirm{background:#ef4444;color:#fff}
+.btn-confirm:hover{background:#dc2626}
+.error{color:#ef4444;font-size:12px;display:none;margin:8px 0 12px;font-weight:600}
+.msg{grid-column:1/-1;text-align:center;padding:40px 20px;color:#999;background:#fff;border-radius:12px;margin:20px;transition:all 0.3s}
+body.dark .msg{background:#111827;color:#6b7280}
+.loading{display:flex;align-items:center;justify-content:center;gap:8px;grid-column:1/-1;padding:60px 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid rgba(0,0,0,0.1);border-top-color:#f59e0b;border-radius:50%;animation:spin 0.8s linear infinite}
+body.dark .spinner{border-color:rgba(255,255,255,0.1);border-top-color:#f59e0b}
+.toast{position:fixed;top:20px;right:20px;background:#22c55e;color:#fff;padding:12px 20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:9999;font-weight:bold;display:none;font-size:13px}
+.toast.show{display:block}
+.toast.error{background:#ef4444}
+</style>
+</head>
+<body>
+<header>JKT48 SHOW THEATER<span class="admin-badge">ADMIN</span><button class="header-theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode"><svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg></button></header>
+<div class="top"><div class="search-box"><input type="text" id="searchInput" placeholder="Cari member..." oninput="searchMember()"></div><button class="logout-btn" onclick="logout()">Logout</button></div>
+<div class="activity-section"><div class="activity-header"><div class="activity-title">Activity Log</div><button class="clear-log-btn" onclick="clearActivityLog()">Clear</button></div><div class="activity-log" id="activityLog"><div class="activity-empty">Belum ada aktivitas hari ini</div></div></div>
+<div class="filters"><button class="filter all active" onclick="filterGen('all')">ALL</button><button class="filter" onclick="filterGen(3)" style="background:#ec4899;color:#fff">Gen 3</button><button class="filter" onclick="filterGen(6)" style="background:#22c55e;color:#fff">Gen 6</button><button class="filter" onclick="filterGen(7)" style="background:#15803d;color:#fff">Gen 7</button><button class="filter" onclick="filterGen(8)" style="background:#1e40af;color:#fff">Gen 8</button><button class="filter" onclick="filterGen(9)" style="background:#06b6d4;color:#fff">Gen 9</button><button class="filter" onclick="filterGen(10)" style="background:#38bdf8;color:#fff">Gen 10</button><button class="filter" onclick="filterGen(11)" style="background:#f97316;color:#fff">Gen 11</button><button class="filter" onclick="filterGen(12)" style="background:#fde68a;color:#000">Gen 12</button><button class="filter" onclick="filterGen(13)" style="background:#facc15;color:#000">Gen 13</button><button class="filter" onclick="filterGen(14)" style="background:#f3c6ff;color:#000">Gen 14</button></div>
+<div class="stats" id="stats"></div>
+<div class="container" id="list"><div class="loading"><div class="spinner"></div><span>Loading data...</span></div></div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="loginModal"><div class="modal-box"><button class="modal-theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode"><svg id="modalThemeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg></button><h3>Admin Login</h3><p>Masukkan kredensial admin</p><label class="input-label">Email</label><input id="email" type="email" placeholder="Masukan email" autocomplete="email"><label class="input-label">Password</label><input id="password" type="password" placeholder="Masukkan password" autocomplete="current-password" onkeypress="if(event.key==='Enter')login()"><div class="error" id="errorMsg"></div><button onclick="login()" style="background:#22c55e;width:100%;margin-top:8px;color:#fff;padding:12px;border-radius:12px">Login</button></div></div>
+<div class="modal" id="logoutModal"><div class="modal-box"><h3>Konfirmasi Logout</h3><p>Apakah Anda yakin ingin keluar dari panel admin?</p><div class="modal-buttons"><button class="btn-cancel" onclick="closeLogoutModal()">Batal</button><button class="btn-confirm" onclick="confirmLogout()">Logout</button></div></div></div>
+<script>
+const SUPABASE_URL="https://pprxfopqkvpeajeoxzig.supabase.co";const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwcnhmb3Bxa3ZwZWFqZW94emlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNTI4MTIsImV4cCI6MjA4MTgyODgxMn0.iXRO_dAHhtVHRLqGTresG_63RD2zIaopNXtXYNfthdg";const ADMIN_ACCOUNTS={'admin@jkt48.com':'jkt48admin','superadmin@jkt48.com':'jkt48super'};const GEN_COLORS={3:'#ec4899',6:'#22c55e',7:'#15803d',8:'#1e40af',9:'#06b6d4',10:'#38bdf8',11:'#f97316',12:'#fde68a',13:'#facc15',14:'#f3c6ff'};const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);let members=[];let currentGen='all';let searchQuery='';let activityLog=[];function toggleTheme(){const body=document.body;const icon=document.getElementById('themeIcon');const modalIcon=document.getElementById('modalThemeIcon');body.classList.toggle('dark');if(body.classList.contains('dark')){const sunIcon='<path d="M12,17a5,5,0,1,1,5-5A5,5,0,0,1,12,17Zm0-8a3,3,0,1,0,3,3A3,3,0,0,0,12,9Zm0-4a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41L6.34,5A1,1,0,0,0,4.93,6.34ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm.64,5.66a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71a1,1,0,0,0-1.41-1.41ZM12,19a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19Zm6.36-2.34a1,1,0,0,0-1.41,1.41l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-3.64-3.95a1,1,0,0,0,.7.29,1,1,0,0,0,.71-1.7l-.71-.71a1,1,0,0,0-1.41,1.41Z"/>';if(icon)icon.innerHTML=sunIcon;if(modalIcon)modalIcon.innerHTML=sunIcon;localStorage.setItem('jkt48_theme','dark')}else{const moonIcon='<path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/>';if(icon)icon.innerHTML=moonIcon;if(modalIcon)modalIcon.innerHTML=moonIcon;localStorage.setItem('jkt48_theme','light')}}const savedTheme=localStorage.getItem('jkt48_theme');if(savedTheme==='dark'){document.body.classList.add('dark')}const adminEmail=localStorage.getItem('jkt48_admin_email');const loginTime=localStorage.getItem('jkt48_admin_login_time');if(!adminEmail||!loginTime){document.getElementById('loginModal').style.display='flex';setTimeout(()=>document.getElementById('email').focus(),100)}else{const currentTime=new Date().getTime();const sessionAge=currentTime-parseInt(loginTime);if(sessionAge>86400000){localStorage.removeItem('jkt48_admin_email');localStorage.removeItem('jkt48_admin_login_time');alert('Sesi login Anda telah berakhir. Silakan login kembali.');document.getElementById('loginModal').style.display='flex';setTimeout(()=>document.getElementById('email').focus(),100)}else{loadData();loadActivityLog()}}async function loadData(){try{const{data,error}=await db.from('members').select('*').order('show',{ascending:false});if(error)throw error;members=data||[];renderMembers();updateStats()}catch(err){console.error('Error:',err);document.getElementById('list').innerHTML=`<div class="msg">Error: ${err.message}</div>`}}function loadActivityLog(){const saved=localStorage.getItem('jkt48_activity_log');if(saved){activityLog=JSON.parse(saved);const today=new Date().toDateString();activityLog=activityLog.filter(log=>new Date(log.time).toDateString()===today)}renderActivityLog()}function saveActivityLog(){localStorage.setItem('jkt48_activity_log',JSON.stringify(activityLog))}function addActivity(memberName,change,newValue){const activity={member:memberName,change:change,newValue:newValue,time:new Date().toISOString()};activityLog.unshift(activity);if(activityLog.length>50)activityLog=activityLog.slice(0,50);saveActivityLog();renderActivityLog()}function renderActivityLog(){const logEl=document.getElementById('activityLog');if(activityLog.length===0){logEl.innerHTML='<div class="activity-empty">Belum ada aktivitas hari ini</div>';return}logEl.innerHTML=activityLog.map(log=>{const time=new Date(log.time);const timeStr=time.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});const icon=log.change>0?'+':'−';const color=log.change>0?'#22c55e':'#ef4444';const action=log.change>0?'+':'';return`<div class="activity-item" style="--color:${color}"><div class="activity-icon">${icon}</div><div class="activity-content"><div class="activity-text">${log.member} ${action}${log.change} → ${log.newValue} show</div><div class="activity-time">${timeStr}</div></div></div>`}).join('')}function clearActivityLog(){if(confirm('Hapus semua activity log?')){activityLog=[];saveActivityLog();renderActivityLog();showToast('Activity log berhasil dihapus',false)}}function renderMembers(){const list=document.getElementById('list');let filtered=members.filter(m=>{const matchGen=currentGen==='all'||m.gen===currentGen;const matchSearch=!searchQuery||m.name.toLowerCase().includes(searchQuery.toLowerCase());return matchGen&&matchSearch});if(filtered.length===0){if(currentGen!=='all'&&!searchQuery){list.innerHTML=`<div class="msg">Member Generasi ${currentGen} masih belum tersedia</div>`}else{list.innerHTML='<div class="msg">Tidak ada data member</div>'}return}list.innerHTML='';const sorted=filtered.sort((a,b)=>b.show-a.show);sorted.forEach(m=>{const percent=Math.min(100,(m.show/1000)*100);const color=GEN_COLORS[m.gen]||'#6366f1';const card=document.createElement('div');card.className='card';card.style.setProperty('--gen-color',color);card.innerHTML=`<img class="avatar" src="img/${m.name.toLowerCase()}.jpg" onerror="this.style.display='none'" alt="${m.name}"><div class="card-footer"><div class="gen-badge">Gen ${m.gen}</div><div class="name">${m.name}</div><div class="show">${m.show} show</div><div class="bar"><span style="width:${percent}%"></span></div><div class="admin-controls"><button onclick="updateShow(${m.id},-1)">−</button><button onclick="updateShow(${m.id},1)">+</button></div></div>`;list.appendChild(card)})}async function updateShow(id,change){const member=members.find(m=>m.id===id);if(!member)return;const newShow=Math.max(0,member.show+change);try{const{data,error}=await db.from('members').update({show:newShow}).eq('id',id).select();if(error){console.error('Update error:',error);showToast(`Gagal update: ${error.message}`,true);return}if(!data||data.length===0){showToast('Update gagal - cek RLS policy',true);return}member.show=newShow;addActivity(member.name,change,newShow);renderMembers();updateStats();showToast(`${member.name}: ${newShow} show`,false)}catch(err){console.error('Exception:',err);showToast(`Error: ${err.message}`,true)}}function showToast(message,isError=false){const toast=document.getElementById('toast');toast.textContent=message;toast.className='toast show'+(isError?' error':'');setTimeout(()=>toast.classList.remove('show'),2000)}function updateStats(){const stats=document.getElementById('stats');let filtered=members.filter(m=>{const matchGen=currentGen==='all'||m.gen===currentGen;const matchSearch=!searchQuery||m.name.toLowerCase().includes(searchQuery.toLowerCase());return matchGen&&matchSearch});const total=filtered.reduce((sum,m)=>sum+m.show,0);stats.innerHTML=`${filtered.length} members • ${total.toLocaleString()} total shows`}function searchMember(){searchQuery=document.getElementById('searchInput').value;renderMembers();updateStats()}function filterGen(gen){currentGen=gen;document.querySelectorAll('.filter').forEach(btn=>btn.classList.remove('active'));event.target.classList.add('active');renderMembers();updateStats()}function login(){const email=document.getElementById('email').value.trim();const password=document.getElementById('password').value;const errMsg=document.getElementById('errorMsg');if(!email||!password){errMsg.style.display='block';errMsg.innerText='Email dan password harus diisi!';return}const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;if(!emailRegex.test(email)){errMsg.style.display='block';errMsg.innerText='Format email tidak valid!';return}if(ADMIN_ACCOUNTS[email]&&ADMIN_ACCOUNTS[email]===password){localStorage.setItem('jkt48_admin_email',email);localStorage.setItem('jkt48_admin_login_time',new Date().getTime().toString());document.getElementById('loginModal').style.display='none';loadData();loadActivityLog();showToast(`Selamat datang, ${email}!`,false)}else{errMsg.style.display='block';errMsg.innerText='Email atau password salah!'}}function logout(){document.getElementById('logoutModal').style.display='flex'}function closeLogoutModal(){document.getElementById('logoutModal').style.display='none'}function confirmLogout(){localStorage.removeItem('jkt48_admin_email');localStorage.removeItem('jkt48_admin_login_time');sessionStorage.clear();window.location.reload()}window.addEventListener('DOMContentLoaded',()=>{const icon=document.getElementById('themeIcon');const modalIcon=document.getElementById('modalThemeIcon');if(savedTheme==='dark'){const sunIcon='<path d="M12,17a5,5,0,1,1,5-5A5,5,0,0,1,12,17Zm0-8a3,3,0,1,0,3,3A3,3,0,0,0,12,9Zm0-4a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41L6.34,5A1,1,0,0,0,4.93,6.34ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm.64,5.66a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71a1,1,0,0,0-1.41-1.41ZM12,19a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19Zm6.36-2.34a1,1,0,0,0-1.41,1.41l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-3.64-3.95a1,1,0,0,0,.7.29,1,1,0,0,0,.71-1.7l-.71-.71a1,1,0,0,0-1.41,1.41Z"/>';if(icon)icon.innerHTML=sunIcon;if(modalIcon)modalIcon.innerHTML=sunIcon}});window.addEventListener('beforeunload',()=>{localStorage.removeItem('jkt48_admin_email');localStorage.removeItem('jkt48_admin_login_time');sessionStorage.clear()});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){sessionStorage.setItem('jkt48_admin_inactive','true')}else if(document.visibilityState==='visible'){const wasInactive=sessionStorage.getItem('jkt48_admin_inactive');if(wasInactive){localStorage.removeItem('jkt48_admin_email');localStorage.removeItem('jkt48_admin_login_time');sessionStorage.clear();window.location.reload()}}});
+</script>
+</body>
+</html>
