@@ -38,7 +38,7 @@ body.dark .activity-time{color:#9ca3af}
 .filters{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:15px 20px;background:#fff;border-bottom:1px solid #ddd}
 body.dark .filters{background:#111827;border-bottom:1px solid #1f2937}
 .filter{padding:8px 16px;font-size:13px;border-radius:20px;border:2px solid transparent;cursor:pointer;font-weight:bold;background:#f0f0f0;color:#333}
-.filter.active{border-color:#e60012}
+.filter.active{border:2px solid #e60012 !important;box-shadow:0 0 0 1px rgba(230,0,18,0.1)}
 .filter.all{background:#e60012;color:#fff}
 .filter.inti{background:#22c55e;color:#fff}
 .filter.trainee{background:#f59e0b;color:#fff}
@@ -100,19 +100,19 @@ body.dark .setlist-info{background:#1f2937;border-color:#374151;color:#9ca3af}
 <div class="top"><div class="search-box"><input type="text" id="searchInput" placeholder="Cari member..." oninput="searchMember()"></div><button class="logout-btn" onclick="logout()">Logout</button></div>
 <div class="activity-section"><div class="activity-header"><div class="activity-title">Activity Log</div><button class="clear-log-btn" onclick="clearActivityLog()">Clear</button></div><div class="activity-log" id="activityLog"><div class="activity-empty">Belum ada aktivitas hari ini</div></div></div>
 <div class="filters">
-<button class="filter all active" onclick="filterType('all')">ALL</button>
-<button class="filter inti" onclick="filterType('inti')">INTI</button>
-<button class="filter trainee" onclick="filterType('trainee')">TRAINEE</button>
-<button class="filter" onclick="filterGen(3)" style="background:#ec4899;color:#fff">Gen 3</button>
-<button class="filter" onclick="filterGen(6)" style="background:#22c55e;color:#fff">Gen 6</button>
-<button class="filter" onclick="filterGen(7)" style="background:#15803d;color:#fff">Gen 7</button>
-<button class="filter" onclick="filterGen(8)" style="background:#1e40af;color:#fff">Gen 8</button>
-<button class="filter" onclick="filterGen(9)" style="background:#06b6d4;color:#fff">Gen 9</button>
-<button class="filter" onclick="filterGen(10)" style="background:#38bdf8;color:#fff">Gen 10</button>
-<button class="filter" onclick="filterGen(11)" style="background:#f97316;color:#fff">Gen 11</button>
-<button class="filter" onclick="filterGen(12)" style="background:#fde68a;color:#000">Gen 12</button>
-<button class="filter" onclick="filterGen(13)" style="background:#facc15;color:#000">Gen 13</button>
-<button class="filter" onclick="filterGen(14)" style="background:#f3c6ff;color:#000">Gen 14</button>
+    <button class="filter all active" onclick="filterType('all')">ALL</button>
+    <button class="filter inti" onclick="filterType('inti')">INTI</button>
+    <button class="filter trainee" onclick="filterType('trainee')">TRAINEE</button>
+    <button class="filter" onclick="filterGen(3)" style="background:#ec4899;color:#fff">Gen 3</button>
+    <button class="filter" onclick="filterGen(6)" style="background:#22c55e;color:#fff">Gen 6</button>
+    <button class="filter" onclick="filterGen(7)" style="background:#15803d;color:#fff">Gen 7</button>
+    <button class="filter" onclick="filterGen(8)" style="background:#1e40af;color:#fff">Gen 8</button>
+    <button class="filter" onclick="filterGen(9)" style="background:#06b6d4;color:#fff">Gen 9</button>
+    <button class="filter" onclick="filterGen(10)" style="background:#38bdf8;color:#fff">Gen 10</button>
+    <button class="filter" onclick="filterGen(11)" style="background:#f97316;color:#fff">Gen 11</button>
+    <button class="filter" onclick="filterGen(12)" style="background:#fde68a;color:#000">Gen 12</button>
+    <button class="filter" onclick="filterGen(13)" style="background:#facc15;color:#000">Gen 13</button>
+    <button class="filter" onclick="filterGen(14)" style="background:#f3c6ff;color:#000">Gen 14</button>
 </div>
 <div class="stats" id="stats"></div>
 <div class="container" id="list"><div class="loading"><div class="spinner"></div><span>Loading data...</span></div></div>
@@ -125,7 +125,7 @@ var SUPABASE_URL='https://pprxfopqkvpeajeoxzig.supabase.co';
 var SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwcnhmb3Bxa3ZwZWFqZW94emlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNTI4MTIsImV4cCI6MjA4MTgyODgxMn0.iXRO_dAHhtVHRLqGTresG_63RD2zIaopNXtXYNfthdg';
 var ADMIN_ACCOUNTS={'admin@jkt48.com':'jkt48admin','superadmin@jkt48.com':'jkt48super'};
 var GEN_COLORS={3:'#ec4899',6:'#22c55e',7:'#15803d',8:'#1e40af',9:'#06b6d4',10:'#38bdf8',11:'#f97316',12:'#fde68a',13:'#facc15',14:'#f3c6ff'};
-var SETLIST_INTI={'Pertaruhan Cinta':'Setlist tentang taruhan cinta untuk member inti','Te wo Tsunaginagara':'Setlist sambil bergandengan tangan','Cara Meminum Ramune':'Setlist segar seperti minuman ramune'};
+var SETLIST_INTI={'Cara Meminum Ramune':'Setlist segar seperti minuman ramune','TTe wo Tsunaginagara':'Setlist sambil bergandengan tangan','Pertarungan Cinta':'Setlist tentang taruhan cinta untuk member inti'};
 var SETLIST_TRAINEE={'Pajama Drive':'Setlist klasik untuk member trainee'};
 var SETLIST_INFO=Object.assign({},SETLIST_INTI,SETLIST_TRAINEE);
 var db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -135,36 +135,487 @@ var currentStatus='all';
 var searchQuery='';
 var activityLog=[];
 var currentMemberId=null;
-function toggleTheme(){var b=document.body;var i=document.getElementById('themeIcon');var m=document.getElementById('modalThemeIcon');b.classList.toggle('dark');if(b.classList.contains('dark')){var s='<path d="M12,17a5,5,0,1,1,5-5A5,5,0,0,1,12,17Zm0-8a3,3,0,1,0,3,3A3,3,0,0,0,12,9Zm0-4a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41L6.34,5A1,1,0,0,0,4.93,6.34ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm.64,5.66a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71a1,1,0,0,0-1.41-1.41ZM12,19a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19Zm6.36-2.34a1,1,0,0,0-1.41,1.41l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-3.64-3.95a1,1,0,0,0,.7.29,1,1,0,0,0,.71-1.7l-.71-.71a1,1,0,0,0-1.41,1.41Z"/>';if(i)i.innerHTML=s;if(m)m.innerHTML=s;localStorage.setItem('jkt48_theme','dark')}else{var n='<path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/>';if(i)i.innerHTML=n;if(m)m.innerHTML=n;localStorage.setItem('jkt48_theme','light')}}
+
+function toggleTheme(){
+    var b=document.body;
+    var i=document.getElementById('themeIcon');
+    var m=document.getElementById('modalThemeIcon');
+    b.classList.toggle('dark');
+    if(b.classList.contains('dark')){
+        var s='<path d="M12,17a5,5,0,1,1,5-5A5,5,0,0,1,12,17Zm0-8a3,3,0,1,0,3,3A3,3,0,0,0,12,9Zm0-4a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41L6.34,5A1,1,0,0,0,4.93,6.34ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm.64,5.66a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71a1,1,0,0,0-1.41-1.41ZM12,19a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19Zm6.36-2.34a1,1,0,0,0-1.41,1.41l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-3.64-3.95a1,1,0,0,0,.7.29,1,1,0,0,0,.71-1.7l-.71-.71a1,1,0,0,0-1.41,1.41Z"/>';
+        if(i)i.innerHTML=s;
+        if(m)m.innerHTML=s;
+        localStorage.setItem('jkt48_theme','dark');
+    }else{
+        var n='<path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/>';
+        if(i)i.innerHTML=n;
+        if(m)m.innerHTML=n;
+        localStorage.setItem('jkt48_theme','light');
+    }
+}
+
 var savedTheme=localStorage.getItem('jkt48_theme');
-if(savedTheme==='dark'){document.body.classList.add('dark')}
+if(savedTheme==='dark'){
+    document.body.classList.add('dark');
+}
+
 var adminEmail=localStorage.getItem('jkt48_admin_email');
 var loginTime=localStorage.getItem('jkt48_admin_login_time');
-if(!adminEmail||!loginTime){document.getElementById('loginModal').style.display='flex';setTimeout(function(){document.getElementById('email').focus()},100)}else{var currentTime=new Date().getTime();var sessionAge=currentTime-parseInt(loginTime);if(sessionAge>86400000){localStorage.removeItem('jkt48_admin_email');localStorage.removeItem('jkt48_admin_login_time');alert('Sesi login berakhir. Silakan login kembali.');document.getElementById('loginModal').style.display='flex';setTimeout(function(){document.getElementById('email').focus()},100)}else{loadData();loadActivityLog()}}
-async function loadData(){try{var result=await db.from('members').select('*').order('show',{ascending:false});if(result.error)throw result.error;members=result.data||[];renderMembers();updateStats()}catch(err){console.error('Error:',err);document.getElementById('list').innerHTML='<div class="msg">Error: '+err.message+'</div>'}}
-function loadActivityLog(){var saved=localStorage.getItem('jkt48_activity_log');if(saved){activityLog=JSON.parse(saved);var today=new Date().toDateString();activityLog=activityLog.filter(function(log){return new Date(log.time).toDateString()===today})}renderActivityLog()}
-function saveActivityLog(){localStorage.setItem('jkt48_activity_log',JSON.stringify(activityLog))}
-function addActivity(memberName,change,newValue,setlist,status){var activity={member:memberName,change:change,newValue:newValue,setlist:setlist||null,status:status||'inti',time:new Date().toISOString()};activityLog.unshift(activity);if(activityLog.length>50)activityLog=activityLog.slice(0,50);saveActivityLog();renderActivityLog()}
-function renderActivityLog(){var logEl=document.getElementById('activityLog');if(activityLog.length===0){logEl.innerHTML='<div class="activity-empty">Belum ada aktivitas hari ini</div>';return}logEl.innerHTML=activityLog.map(function(log){var time=new Date(log.time);var timeStr=time.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});var icon=log.change>0?'+':'−';var color=log.change>0?'#22c55e':'#ef4444';var action=log.change>0?'+':'';var setlistText=log.setlist?' ('+log.setlist+')':'';var statusBadge=log.status==='trainee'?' [TRAINEE]':'';return'<div class="activity-item" style="--color:'+color+'"><div class="activity-icon">'+icon+'</div><div class="activity-content"><div class="activity-text">'+log.member+statusBadge+' '+action+log.change+' → '+log.newValue+' show'+setlistText+'</div><div class="activity-time">'+timeStr+'</div></div></div>'}).join('')}
-function clearActivityLog(){if(confirm('Hapus semua activity log?')){activityLog=[];saveActivityLog();renderActivityLog();showToast('Activity log berhasil dihapus',false)}}
-function renderMembers(){var list=document.getElementById('list');var filtered=members.filter(function(m){var matchGen=currentGen==='all'||m.gen===currentGen;var matchStatus=currentStatus==='all'||m.status===currentStatus;var matchSearch=!searchQuery||m.name.toLowerCase().includes(searchQuery.toLowerCase());return matchGen&&matchStatus&&matchSearch});if(filtered.length===0){list.innerHTML='<div class="msg">Tidak ada data member</div>';return}list.innerHTML='';var sorted=filtered.sort(function(a,b){return b.show-a.show});sorted.forEach(function(m){var percent=Math.min(100,(m.show/1000)*100);var color=GEN_COLORS[m.gen]||'#6366f1';var card=document.createElement('div');card.className='card'+(m.status==='trainee'?' trainee':'');card.style.setProperty('--gen-color',color);var statusBadgeHtml=m.status==='trainee'?'<div class="status-badge trainee">TRAINEE</div>':'<div class="status-badge">INTI</div>';card.innerHTML=statusBadgeHtml+'<img class="avatar" src="img/'+m.name.toLowerCase()+'.jpg" onerror="this.style.display=\'none\'" alt="'+m.name+'"><div class="card-footer"><div class="gen-badge">Gen '+m.gen+'</div><div class="name">'+m.name+'</div><div class="show">'+m.show+' show</div><div class="bar"><span style="width:'+percent+'%"></span></div><div class="admin-controls"><button onclick="updateShow('+m.id+',-1)">−</button><button onclick="openSetlistModal('+m.id+')">+</button></div></div>';list.appendChild(card)})}
-function openSetlistModal(memberId){currentMemberId=memberId;var member=members.find(function(m){return m.id===memberId});if(!member)return;document.getElementById('setlistMemberName').textContent='Member: '+member.name+' ('+(member.status==='trainee'?'TRAINEE':'INTI')+')';var selectEl=document.getElementById('setlistSelect');selectEl.innerHTML='<option value="">Pilih Setlist...</option>';var setlists=member.status==='trainee'?SETLIST_TRAINEE:SETLIST_INTI;for(var key in setlists){selectEl.innerHTML+='<option value="'+key+'">'+key+'</option>'}selectEl.value='';document.getElementById('setlistInfo').style.display='none';document.getElementById('setlistModal').style.display='flex'}
-function closeSetlistModal(){document.getElementById('setlistModal').style.display='none';currentMemberId=null}
-document.getElementById('setlistSelect').addEventListener('change',function(){var setlist=this.value;var infoEl=document.getElementById('setlistInfo');var descEl=document.getElementById('setlistDescription');if(setlist&&SETLIST_INFO[setlist]){descEl.textContent=SETLIST_INFO[setlist];infoEl.style.display='block'}else{infoEl.style.display='none'}});
-async function addShowWithSetlist(){var setlist=document.getElementById('setlistSelect').value;if(!setlist){showToast('Pilih setlist terlebih dahulu!',true);return}if(!currentMemberId)return;var member=members.find(function(m){return m.id===currentMemberId});if(!member)return;var newShow=member.show+1;try{var result=await db.from('members').update({show:newShow}).eq('id',currentMemberId).select();if(result.error){console.error('Update error:',result.error);showToast('Gagal update: '+result.error.message,true);return}if(!result.data||result.data.length===0){showToast('Update gagal - cek RLS policy',true);return}member.show=newShow;addActivity(member.name,1,newShow,setlist,member.status);renderMembers();updateStats();closeSetlistModal();showToast(member.name+': '+newShow+' show ('+setlist+')',false)}catch(err){console.error('Exception:',err);showToast('Error: '+err.message,true)}}
-async function updateShow(id,change){var member=members.find(function(m){return m.id===id});if(!member)return;var newShow=Math.max(0,member.show+change);try{var result=await db.from('members').update({show:newShow}).eq('id',id).select();if(result.error){console.error('Update error:',result.error);showToast('Gagal update: '+result.error.message,true);return}if(!result.data||result.data.length===0){showToast('Update gagal - cek RLS policy',true);return}member.show=newShow;addActivity(member.name,change,newShow,null,member.status);renderMembers();updateStats();showToast(member.name+': '+newShow+' show',false)}catch(err){console.error('Exception:',err);showToast('Error: '+err.message,true)}}
-function showToast(message,isError){var toast=document.getElementById('toast');toast.textContent=message;toast.className='toast show'+(isError?' error':'');setTimeout(function(){toast.classList.remove('show')},2000)}
-function updateStats(){var stats=document.getElementById('stats');var filtered=members.filter(function(m){var matchGen=currentGen==='all'||m.gen===currentGen;var matchStatus=currentStatus==='all'||m.status===currentStatus;var matchSearch=!searchQuery||m.name.toLowerCase().includes(searchQuery.toLowerCase());return matchGen&&matchStatus&&matchSearch});var intiCount=filtered.filter(function(m){return m.status==='inti'}).length;var traineeCount=filtered.filter(function(m){return m.status==='trainee'}).length;var total=filtered.reduce(function(sum,m){return sum+m.show},0);stats.innerHTML=intiCount+' Inti • '+traineeCount+' Trainee • '+total.toLocaleString()+' total shows'}
-function searchMember(){searchQuery=document.getElementById('searchInput').value;renderMembers();updateStats()}
-function filterType(type){currentStatus=type;currentGen='all';document.querySelectorAll('.filter').forEach(function(btn){btn.classList.remove('active')});event.target.classList.add('active');renderMembers();updateStats()}
-function filterGen(gen){currentGen=gen;currentStatus='all';document.querySelectorAll('.filter').forEach(function(btn){btn.classList.remove('active')});event.target.classList.add('active');renderMembers();updateStats()}
-function login(){var email=document.getElementById('email').value.trim();var password=document.getElementById('password').value;var errMsg=document.getElementById('errorMsg');if(!email||!password){errMsg.style.display='block';errMsg.innerText='Email dan password harus diisi!';return}var emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;if(!emailRegex.test(email)){errMsg.style.display='block';errMsg.innerText='Format email tidak valid!';return}if(ADMIN_ACCOUNTS[email]&&ADMIN_ACCOUNTS[email]===password){localStorage.setItem('jkt48_admin_email',email);localStorage.setItem('jkt48_admin_login_time',new Date().getTime().toString());document.getElementById('loginModal').style.display='none';loadData();loadActivityLog();showToast('Selamat datang, '+email+'!',false)}else{errMsg.style.display='block';errMsg.innerText='Email atau password salah!'}}
-function logout(){document.getElementById('logoutModal').style.display='flex'}
-function closeLogoutModal(){document.getElementById('logoutModal').style.display='none'}
-function confirmLogout(){localStorage.removeItem('jkt48_admin_email');localStorage.removeItem('jkt48_admin_login_time');sessionStorage.clear();window.location.reload()}
-window.addEventListener('DOMContentLoaded',function(){var icon=document.getElementById('themeIcon');var modalIcon=document.getElementById('modalThemeIcon');if(savedTheme==='dark'){var sunIcon='<path d="M12,17a5,5,0,1,1,5-5A5,5,0,0,1,12,17Zm0-8a3,3,0,1,0,3,3A3,3,0,0,0,12,9Zm0-4a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41L6.34,5A1,1,0,0,0,4.93,6.34ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm.64,5.66a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71a1,1,0,0,0-1.41-1.41ZM12,19a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19Zm6.36-2.34a1,1,0,0,0-1.41,1.41l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-3.64-3.95a1,1,0,0,0,.7.29,1,1,0,0,0,.71-1.7l-.71-.71a1,1,0,0,0-1.41,1.41Z"/>';if(icon)icon.innerHTML=sunIcon;if(modalIcon)modalIcon.innerHTML=sunIcon}});
-window.addEventListener('beforeunload',function(){localStorage.removeItem('jkt48_admin_email');localStorage.removeItem('jkt48_admin_login_time');sessionStorage.clear()});
-document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'){sessionStorage.setItem('jkt48_admin_inactive','true')}else if(document.visibilityState==='visible'){var wasInactive=sessionStorage.getItem('jkt48_admin_inactive');if(wasInactive){localStorage.removeItem('jkt48_admin_email');localStorage.removeItem('jkt48_admin_login_time');sessionStorage.clear();window.location.reload()}}});
+if(!adminEmail||!loginTime){
+    document.getElementById('loginModal').style.display='flex';
+    setTimeout(function(){document.getElementById('email').focus()},100);
+}else{
+    var currentTime=new Date().getTime();
+    var sessionAge=currentTime-parseInt(loginTime);
+    if(sessionAge>86400000){
+        localStorage.removeItem('jkt48_admin_email');
+        localStorage.removeItem('jkt48_admin_login_time');
+        alert('Sesi login berakhir. Silakan login kembali.');
+        document.getElementById('loginModal').style.display='flex';
+    }else{
+        loadData();
+        loadActivityLog();
+    }
+}
+
+async function loadData(){
+    try{
+        console.log('Memuat data dari Supabase...');
+        var result=await db.from('members').select('*').order('show',{ascending:false});
+        
+        if(result.error){
+            console.error('Error dari Supabase:', result.error);
+            throw result.error;
+        }
+        
+        members=result.data||[];
+        console.log(`✅ Berhasil memuat ${members.length} member`);
+        
+        if(members.length > 0){
+            console.log('Sample data:');
+            members.slice(0,3).forEach(m => {
+                console.log(`- ${m.name} (Gen ${m.gen}, ${m.status}, ${m.show} shows)`);
+            });
+        }
+        
+        renderMembers();
+        updateStats();
+    }catch(err){
+        console.error('Error:',err);
+        document.getElementById('list').innerHTML='<div class="msg" style="color:#ef4444">Error: '+err.message+'</div>';
+        showToast('Gagal memuat data: ' + err.message, true);
+    }
+}
+
+function loadActivityLog(){
+    var saved=localStorage.getItem('jkt48_activity_log');
+    if(saved){
+        activityLog=JSON.parse(saved);
+        var today=new Date().toDateString();
+        activityLog=activityLog.filter(function(log){
+            return new Date(log.time).toDateString()===today;
+        });
+    }
+    renderActivityLog();
+}
+
+function saveActivityLog(){
+    localStorage.setItem('jkt48_activity_log',JSON.stringify(activityLog));
+}
+
+function addActivity(memberName,change,newValue,setlist,status){
+    var activity={
+        member:memberName,
+        change:change,
+        newValue:newValue,
+        setlist:setlist||null,
+        status:status||'inti',
+        time:new Date().toISOString()
+    };
+    activityLog.unshift(activity);
+    if(activityLog.length>50) activityLog=activityLog.slice(0,50);
+    saveActivityLog();
+    renderActivityLog();
+}
+
+function renderActivityLog(){
+    var logEl=document.getElementById('activityLog');
+    if(activityLog.length===0){
+        logEl.innerHTML='<div class="activity-empty">Belum ada aktivitas hari ini</div>';
+        return;
+    }
+    logEl.innerHTML=activityLog.map(function(log){
+        var time=new Date(log.time);
+        var timeStr=time.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+        var icon=log.change>0?'+':'−';
+        var color=log.change>0?'#22c55e':'#ef4444';
+        var action=log.change>0?'+':'';
+        var setlistText=log.setlist?' ('+log.setlist+')':'';
+        var statusBadge=log.status==='trainee'?' [TRAINEE]':'';
+        return'<div class="activity-item" style="--color:'+color+'"><div class="activity-icon">'+icon+'</div><div class="activity-content"><div class="activity-text">'+log.member+statusBadge+' '+action+log.change+' → '+log.newValue+' show'+setlistText+'</div><div class="activity-time">'+timeStr+'</div></div></div>';
+    }).join('');
+}
+
+function clearActivityLog(){
+    if(confirm('Hapus semua activity log?')){
+        activityLog=[];
+        saveActivityLog();
+        renderActivityLog();
+        showToast('Activity log berhasil dihapus',false);
+    }
+}
+
+function renderMembers(){
+    var list=document.getElementById('list');
+    var filtered=members.filter(function(m){
+        var matchGen=currentGen==='all'||m.gen==currentGen;
+        var matchStatus=currentStatus==='all'||m.status===currentStatus;
+        var matchSearch=!searchQuery||m.name.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchGen&&matchStatus&&matchSearch;
+    });
+    
+    if(filtered.length===0){
+        var message = 'Tidak ada data member';
+        if(searchQuery){
+            message = `Tidak ada member dengan nama "${searchQuery}"`;
+        }else if(currentStatus!=='all' && currentGen!=='all'){
+            message = `Tidak ada ${currentStatus} Generasi ${currentGen}`;
+        }else if(currentStatus!=='all'){
+            message = `Tidak ada member ${currentStatus}`;
+        }else if(currentGen!=='all'){
+            message = `Tidak ada member Generasi ${currentGen}`;
+        }
+        list.innerHTML='<div class="msg">'+message+'</div>';
+        return;
+    }
+    
+    list.innerHTML='';
+    var sorted=filtered.sort(function(a,b){return b.show-a.show});
+    sorted.forEach(function(m){
+        var percent=Math.min(100,(m.show/1000)*100);
+        var color=GEN_COLORS[m.gen]||'#6366f1';
+        var card=document.createElement('div');
+        card.className='card'+(m.status==='trainee'?' trainee':'');
+        card.style.setProperty('--gen-color',color);
+        
+        var statusBadgeHtml=m.status==='trainee'?'<div class="status-badge trainee">TRAINEE</div>':'<div class="status-badge">INTI</div>';
+        
+        card.innerHTML=statusBadgeHtml+
+            '<img class="avatar" src="img/'+m.name.toLowerCase()+'.jpg" onerror="this.style.display=\'none\'" alt="'+m.name+'">'+
+            '<div class="card-footer">'+
+                '<div class="gen-badge">Gen '+m.gen+'</div>'+
+                '<div class="name">'+m.name+'</div>'+
+                '<div class="show">'+m.show+' show</div>'+
+                '<div class="bar"><span style="width:'+percent+'%"></span></div>'+
+                '<div class="admin-controls">'+
+                    '<button onclick="updateShow('+m.id+',-1)">−</button>'+
+                    '<button onclick="openSetlistModal('+m.id+')">+</button>'+
+                '</div>'+
+            '</div>';
+        list.appendChild(card);
+    });
+}
+
+function openSetlistModal(memberId){
+    currentMemberId=memberId;
+    var member=members.find(function(m){return m.id===memberId});
+    if(!member) return;
+    
+    document.getElementById('setlistMemberName').textContent='Member: '+member.name+' ('+(member.status==='trainee'?'TRAINEE':'INTI')+')';
+    var selectEl=document.getElementById('setlistSelect');
+    selectEl.innerHTML='<option value="">Pilih Setlist...</option>';
+    var setlists=member.status==='trainee'?SETLIST_TRAINEE:SETLIST_INTI;
+    for(var key in setlists){
+        selectEl.innerHTML+='<option value="'+key+'">'+key+'</option>';
+    }
+    selectEl.value='';
+    document.getElementById('setlistInfo').style.display='none';
+    document.getElementById('setlistModal').style.display='flex';
+}
+
+function closeSetlistModal(){
+    document.getElementById('setlistModal').style.display='none';
+    currentMemberId=null;
+}
+
+document.getElementById('setlistSelect').addEventListener('change',function(){
+    var setlist=this.value;
+    var infoEl=document.getElementById('setlistInfo');
+    var descEl=document.getElementById('setlistDescription');
+    if(setlist&&SETLIST_INFO[setlist]){
+        descEl.textContent=SETLIST_INFO[setlist];
+        infoEl.style.display='block';
+    }else{
+        infoEl.style.display='none';
+    }
+});
+
+async function addShowWithSetlist(){
+    var setlist=document.getElementById('setlistSelect').value;
+    if(!setlist){
+        showToast('Pilih setlist terlebih dahulu!',true);
+        return;
+    }
+    if(!currentMemberId) return;
+    
+    var member=members.find(function(m){return m.id===currentMemberId});
+    if(!member) return;
+    
+    console.log('Menambah show untuk:', member.name, 'setlist:', setlist);
+    
+    try{
+        // 1. Update total show di tabel members
+        var newShow=member.show+1;
+        var updateResult=await db.from('members')
+            .update({show:newShow})
+            .eq('id',currentMemberId)
+            .select();
+        
+        if(updateResult.error){
+            console.error('Update members error:',updateResult.error);
+            showToast('Gagal update members: '+updateResult.error.message,true);
+            return;
+        }
+        
+        // 2. Insert ke tabel setlist_performance
+        var setlistData={
+            name:member.name,
+            setlist_name:setlist,
+            show_count:1,
+            status:member.status,
+            created_at:new Date().toISOString(),
+            updated_at:new Date().toISOString()
+        };
+        
+        var insertResult=await db.from('setlist_performance')
+            .insert([setlistData]);
+        
+        if(insertResult.error){
+            // Jika error karena duplikat, update saja
+            if(insertResult.error.code==='23505'||insertResult.error.message.includes('duplicate')){
+                // Cari record yang sudah ada
+                var existing=await db.from('setlist_performance')
+                    .select('*')
+                    .eq('name',member.name)
+                    .eq('setlist_name',setlist);
+                
+                if(existing.data&&existing.data.length>0){
+                    // Update show_count
+                    await db.from('setlist_performance')
+                        .update({
+                            show_count:existing.data[0].show_count+1,
+                            updated_at:new Date().toISOString()
+                        })
+                        .eq('id',existing.data[0].id);
+                }
+            }else{
+                console.error('Insert error:',insertResult.error);
+                showToast('Gagal insert setlist: '+insertResult.error.message,true);
+                return;
+            }
+        }
+        
+        // 3. Update UI
+        member.show=newShow;
+        addActivity(member.name,1,newShow,setlist,member.status);
+        renderMembers();
+        updateStats();
+        closeSetlistModal();
+        showToast(member.name+': '+newShow+' show ('+setlist+')',false);
+        
+    }catch(err){
+        console.error('Exception:',err);
+        showToast('Error: '+err.message,true);
+    }
+}
+
+async function updateShow(id, change){
+    var member = members.find(function(m) { return m.id === id });
+    if (!member) return;
+    
+    // Cari setlist terakhir yang digunakan oleh member ini
+    var setlistResult = await db.from('setlist_performance')
+        .select('*')
+        .eq('name', member.name)
+        .order('updated_at', { ascending: false })
+        .limit(1);
+    
+    var lastSetlist = null;
+    if (setlistResult.data && setlistResult.data.length > 0) {
+        lastSetlist = setlistResult.data[0];
+    }
+    
+    var newShow = Math.max(0, member.show + change);
+    
+    try {
+        // 1. Update total show di tabel members
+        var updateResult = await db.from('members')
+            .update({ show: newShow })
+            .eq('id', id)
+            .select();
+        
+        if (updateResult.error) {
+            throw updateResult.error;
+        }
+        
+        // 2. Jika ada setlist terakhir, kurangi count di tabel setlist_performance
+        if (lastSetlist && change < 0) {
+            var newSetlistCount = Math.max(0, lastSetlist.show_count + change);
+            
+            if (newSetlistCount > 0) {
+                // Update count di setlist_performance
+                await db.from('setlist_performance')
+                    .update({
+                        show_count: newSetlistCount,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', lastSetlist.id);
+            } else {
+                // Jika count menjadi 0, hapus record dari setlist_performance
+                await db.from('setlist_performance')
+                    .delete()
+                    .eq('id', lastSetlist.id);
+            }
+        }
+        
+        // 3. Update UI
+        member.show = newShow;
+        
+        // 4. Log aktivitas dengan info setlist jika ada
+        if (lastSetlist) {
+            addActivity(member.name, change, newShow, lastSetlist.setlist_name, member.status);
+            showToast(`${member.name}: ${newShow} show (${lastSetlist.setlist_name})`, false);
+        } else {
+            addActivity(member.name, change, newShow, null, member.status);
+            showToast(`${member.name}: ${newShow} show`, false);
+        }
+        
+        renderMembers();
+        updateStats();
+        
+    } catch (err) {
+        console.error('Update error:', err);
+        showToast('Gagal update: ' + err.message, true);
+    }
+}
+
+function updateStats(){
+    var filtered=members.filter(function(m){
+        var matchGen=currentGen==='all'||m.gen==currentGen;
+        var matchStatus=currentStatus==='all'||m.status===currentStatus;
+        var matchSearch=!searchQuery||m.name.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchGen&&matchStatus&&matchSearch;
+    });
+    
+    var total=filtered.length;
+    var trainee=filtered.filter(function(m){return m.status==='trainee'}).length;
+    var inti=total-trainee;
+    var totalShows=filtered.reduce(function(sum,m){return sum+m.show},0);
+    var avg=(total>0?(totalShows/total).toFixed(2):0);
+    
+    var statsText=total+' members • '+inti+' Inti • '+trainee+' Trainee • '+totalShows+' total show';
+    if(currentGen!=='all') statsText+=' • Gen '+currentGen;
+    if(currentStatus!=='all') statsText+=' • '+currentStatus.toUpperCase();
+    if(searchQuery) statsText+=' • Search: "'+searchQuery+'"';
+    
+    document.getElementById('stats').innerHTML=statsText;
+}
+
+function filterType(status){
+    currentStatus = status;
+    currentGen = 'all';
+    
+    // Reset active class dari semua filter
+    document.querySelectorAll('.filter').forEach(function(f) {
+        f.classList.remove('active');
+    });
+    
+    // Aktifkan filter yang dipilih
+    event.target.classList.add('active');
+    renderMembers();
+    updateStats();
+}
+
+function filterGen(gen){
+    currentGen = gen;
+    currentStatus = 'all';
+    
+    // Reset active class dari semua filter
+    document.querySelectorAll('.filter').forEach(function(f) {
+        f.classList.remove('active');
+    });
+    
+    // Aktifkan filter yang dipilih
+    event.target.classList.add('active');
+    renderMembers();
+    updateStats();
+}
+
+function searchMember(){
+    searchQuery=document.getElementById('searchInput').value.toLowerCase();
+    renderMembers();
+    updateStats();
+}
+
+function login(){
+    var email=document.getElementById('email').value.trim();
+    var password=document.getElementById('password').value.trim();
+    var error=document.getElementById('errorMsg');
+    
+    error.style.display='none';
+    
+    if(!email||!password){
+        error.textContent='Email dan password harus diisi';
+        error.style.display='block';
+        return;
+    }
+    
+    if(ADMIN_ACCOUNTS[email]===password){
+        var loginTime=new Date().getTime();
+        localStorage.setItem('jkt48_admin_email',email);
+        localStorage.setItem('jkt48_admin_login_time',loginTime.toString());
+        document.getElementById('loginModal').style.display='none';
+        loadData();
+        loadActivityLog();
+        showToast('Login berhasil!',false);
+    }else{
+        error.textContent='Email atau password salah';
+        error.style.display='block';
+    }
+}
+
+function logout(){
+    document.getElementById('logoutModal').style.display='flex';
+}
+
+function closeLogoutModal(){
+    document.getElementById('logoutModal').style.display='none';
+}
+
+function confirmLogout(){
+    localStorage.removeItem('jkt48_admin_email');
+    localStorage.removeItem('jkt48_admin_login_time');
+    closeLogoutModal();
+    document.getElementById('loginModal').style.display='flex';
+    showToast('Logout berhasil',false);
+}
+
+function showToast(message,isError){
+    var toast=document.getElementById('toast');
+    toast.textContent=message;
+    toast.className='toast'+(isError?' error':'');
+    toast.classList.add('show');
+    setTimeout(function(){
+        toast.classList.remove('show');
+    },3000);
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    if(savedTheme==='dark'){
+        document.body.classList.add('dark');
+    }
+});
 </script>
 </body>
 </html>
